@@ -31,13 +31,20 @@ export default function MapComponent({
 }: MapComponentProps) {
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
 
-  const mapContainerStyle = {
-    width: '100%',
-    height: '100%',
-  };
+ const mapContainerStyle = {
+  width: '100%',
+  height: '600px',
+  minHeight: '400px',
+};
 
   return (
-    <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
+   <LoadScript 
+  googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+  onError={(error) => {
+    console.error('Google Maps API Error:', error);
+    alert('Google Maps APIの読み込みに失敗しました');
+  }}
+>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={userLocation}
@@ -77,13 +84,17 @@ export default function MapComponent({
         ))}
 
         {/* 推薦されたお店（赤） */}
-        {recommendations.map((rec) => (
-          <Marker
-            key={rec.place_id}
-            position={{
-              lat: rec.geometry.location.lat(),
-              lng: rec.geometry.location.lng(),
-            }}
+       {recommendations.map((rec) => (
+  <Marker
+    key={rec.place_id}
+    position={{
+      lat: typeof rec.geometry.location.lat === 'function' 
+        ? rec.geometry.location.lat() 
+        : rec.geometry.location.lat,
+      lng: typeof rec.geometry.location.lng === 'function'
+        ? rec.geometry.location.lng()
+        : rec.geometry.location.lng,
+    }}
             title={rec.name}
             onClick={() => setSelectedPlace(rec)}
             icon={{
@@ -94,11 +105,15 @@ export default function MapComponent({
 
         {/* 選択されたお店の詳細 */}
         {selectedPlace && (
-          <InfoWindow
-            position={{
-              lat: selectedPlace.geometry.location.lat(),
-              lng: selectedPlace.geometry.location.lng(),
-            }}
+  <InfoWindow
+    position={{
+      lat: typeof selectedPlace.geometry.location.lat === 'function'
+        ? selectedPlace.geometry.location.lat()
+        : selectedPlace.geometry.location.lat,
+      lng: typeof selectedPlace.geometry.location.lng === 'function'
+        ? selectedPlace.geometry.location.lng()
+        : selectedPlace.geometry.location.lng,
+    }}
             onCloseClick={() => setSelectedPlace(null)}
           >
             <div className="p-3 bg-white rounded-lg shadow-lg">

@@ -89,18 +89,18 @@ export default function Home() {
       setLoading(true);
       const location = place.geometry.location;
 
-      await addDoc(collection(db, 'userLikes'), {
-        userId: user.uid,
-        placeId: place.place_id,
-        placeName: place.name,
-        category: place.types?.[0] || 'その他',
-        rating: place.rating || 0,
-        location: {
-          latitude: location.lat(),
-          longitude: location.lng(),
-        },
-        timestamp: Timestamp.now(),
-      });
+    await addDoc(collection(db, 'userLikes'), {
+  userId: user.uid,
+  placeId: place.place_id,
+  placeName: place.name,
+  category: place.types?.[0] || 'その他',
+  rating: place.rating || 0,
+  location: {
+    latitude: typeof location.lat === 'function' ? location.lat() : location.lat,
+    longitude: typeof location.lng === 'function' ? location.lng() : location.lng,
+  },
+  timestamp: Timestamp.now(),
+});
 
       await fetchUserLikes(user.uid);
     } catch (error) {
@@ -113,51 +113,54 @@ export default function Home() {
 
   // 推薦を生成
   const generateRecommendations = async (location: any, likes: UserLike[]) => {
-    if (likes.length === 0) {
-      setRecommendations([]);
-      return;
-    }
+  try {
+    setLoading(true);
 
-    try {
-      setLoading(true);
+    // いいねしたカテゴリを抽出
+    const categories = likes.map((like) => like.category).filter(Boolean);
+    const topCategory = categories[0] || 'restaurant';
 
-      // いいねしたカテゴリを抽出
-      const categories = likes.map((like) => like.category).filter(Boolean);
-      const topCategory = categories[0] || 'restaurant';
+    console.log('🔍 検索開始:', { location, topCategory });
 
-      // Google Maps APIで近くの店を検索
-      const response = await axios.get('/api/search-places', {
-        params: {
-          category: topCategory,
-          lat: location.lat,
-          lng: location.lng,
-        },
-      });
+    // Google Maps APIで近くの店を検索
+    const response = await axios.get('/api/search-places', {
+      params: {
+        category: topCategory,
+        lat: location.lat,
+        lng: location.lng,
+      },
+    });
 
-      const places = response.data || [];
+    const places = response.data || [];
+    console.log('✅ 取得した店舗数:', places.length);
+    console.log('📍 店舗データ:', places);
 
-      // いいね済みの店を除外
-      const likedPlaceIds = likes.map((like) => like.placeId);
-      const filtered = places.filter(
-        (place: Place) => !likedPlaceIds.includes(place.place_id)
-      );
+    // いいね済みの店を除外
+    const likedPlaceIds = likes.map((like) => like.placeId);
+    const filtered = places.filter(
+      (place: Place) => !likedPlaceIds.includes(place.place_id)
+    );
 
-      // スコア計算（評価が高い順）
-      const scored = filtered
-        .map((place: Place) => ({
-          ...place,
-          score: place.rating || 0,
-        }))
-        .sort((a: any, b: any) => b.score - a.score)
-        .slice(0, 5);
+    console.log('🎯 フィルター後の店舗数:', filtered.length);
 
-      setRecommendations(scored);
-    } catch (error) {
-      console.error('推薦生成エラー:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // スコア計算（評価が高い順）
+    const scored = filtered
+      .map((place: Place) => ({
+        ...place,
+        score: place.rating || 0,
+      }))
+      .sort((a: any, b: any) => b.score - a.score)
+      .slice(0, 5);
+
+    console.log('⭐ 推薦店舗:', scored);
+
+    setRecommendations(scored);
+  } catch (error) {
+    console.error('推薦生成エラー:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // 位置情報取得（ブラウザのGeolocation API）
   useEffect(() => {
@@ -227,15 +230,15 @@ export default function Home() {
 
       {/* メインコンテンツ */}
       <div className="flex flex-1 gap-4 p-4 overflow-hidden">
-        {/* 地図（左側） */}
-        <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
-          <MapComponent
-            userLocation={userLocation}
-            userLikes={userLikes}
-            recommendations={recommendations}
-            onLikePlace={handleLikePlace}
-          />
-        </div>
+       {/* 地図（左側） */}
+<div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
+  <MapComponent
+    userLocation={userLocation}
+    userLikes={userLikes}
+    recommendations={recommendations}
+    onLikePlace={handleLikePlace}
+  />
+</div>
 
         {/* サイドバー（右側） */}
         <div className="w-80 flex flex-col gap-4 overflow-auto">

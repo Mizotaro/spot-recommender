@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { addDoc, collection, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
+import TinderLikeCard from '../components/TinderLikeCard';
 import ExpandableSwipeCard from '../components/ExpandableSwipeCard';
 
 interface Reason {
@@ -128,32 +129,21 @@ export default function DiscoveryScreen({
 
   return (
     <View style={s.container}>
-      <Text style={s.header}>🔍 スポットを発見</Text>
-      <Text style={s.subHeader}>
-        {currentIndex + 1} / {recommendations.length}
-      </Text>
-
-      <View style={s.cardContainer}>
-        <ExpandableSwipeCard
-          key={currentPlace.place_id}
-          place={currentPlace}
-          reason={reason}
-          onLike={handleSwipeRight}
-          onDislike={handleSwipeLeft}
-        />
-      </View>
+      <TinderLikeCard
+        key={currentPlace.place_id}
+        place={currentPlace}
+        reason={reason}
+        onLike={handleSwipeRight}
+        onDislike={handleSwipeLeft}
+        cardIndex={currentIndex}
+        totalCards={recommendations.length}
+      />
     </View>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f8f8' },
-  header: {
-    fontSize: 22, fontWeight: 'bold',
-    textAlign: 'center', paddingTop: 20, paddingBottom: 4,
-  },
-  subHeader: { fontSize: 13, color: '#999', textAlign: 'center', marginBottom: 16 },
-  cardContainer: { flex: 1, paddingHorizontal: 16 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   emptyText: { fontSize: 48 },
   emptyLabel: { fontSize: 16, color: '#666' },

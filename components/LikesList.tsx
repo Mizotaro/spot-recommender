@@ -2,11 +2,19 @@
 
 import React from 'react';
 
+const STATUS_ICON: Record<string, string> = {
+  visited:    '✅',
+  want_to_go: '🎯',
+  interested: '💭',
+};
+
 interface Like {
   placeId: string;
   placeName: string;
   rating: number;
   category: string;
+  memo?: string;
+  status?: string;
 }
 
 export default function LikesList({ likes }: { likes: Like[] }) {
@@ -19,10 +27,18 @@ export default function LikesList({ likes }: { likes: Like[] }) {
         ) : (
           likes.map((like) => (
             <div key={like.placeId} className="p-2 bg-blue-50 rounded border-l-4 border-blue-400">
-              <p className="font-semibold text-sm">{like.placeName}</p>
-              <p className="text-xs text-gray-600">
+              <div className="flex items-start justify-between gap-1">
+                <p className="font-semibold text-sm leading-tight">{like.placeName}</p>
+                {like.status && (
+                  <span className="text-base shrink-0">{STATUS_ICON[like.status] ?? '❤️'}</span>
+                )}
+              </div>
+              <p className="text-xs text-gray-600 mt-0.5">
                 ⭐ {like.rating.toFixed(1)} • {like.category}
               </p>
+              {like.memo && (
+                <p className="text-xs text-gray-500 mt-1 italic line-clamp-2">"{like.memo}"</p>
+              )}
             </div>
           ))
         )}

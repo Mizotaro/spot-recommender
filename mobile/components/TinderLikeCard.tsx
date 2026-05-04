@@ -60,7 +60,6 @@ export default function TinderLikeCard({
       const SWIPE_VELOCITY = 0.5;
 
       const isSwipeRight = gesture.dx >  SWIPE_DISTANCE || gesture.vx >  SWIPE_VELOCITY;
-      const isSwipeLeft  = gesture.dx < -SWIPE_DISTANCE || gesture.vx < -SWIPE_VELOCITY;
 
       if (isSwipeRight) {
         setIsAnimating(true);
@@ -74,16 +73,23 @@ export default function TinderLikeCard({
           resetCard();
         });
 
-      } else if (isSwipeLeft) {
+      } else if (gesture.dx < -SWIPE_THRESHOLD || gesture.vx < -0.5) {
         setIsAnimating(true);
         Animated.parallel([
-          Animated.timing(position.x, { toValue: -SCREEN_WIDTH * 2,  duration: 400, useNativeDriver: false }),
-          Animated.timing(rotation,   { toValue: -30,                 duration: 400, useNativeDriver: false }),
-          Animated.timing(nopeOpacity,{ toValue: 1,                   duration: 200, useNativeDriver: false }),
+          Animated.timing(position.x, {
+            toValue: -SCREEN_WIDTH * 2,
+            duration: 400,
+            useNativeDriver: false,
+          }),
+          Animated.timing(rotation, {
+            toValue: -30,
+            duration: 400,
+            useNativeDriver: false,
+          }),
         ]).start(() => {
-          console.log('Left swipe - calling onDislike');
           onDislike();
           resetCard();
+          setIsAnimating(false);
         });
 
       } else {

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl *)",
+      "Bash(start *)",
+      "Bash(npm --version)",
+      "Bash(node *)",
+      "Bash(pkill -f \"expo start\")",
+      "Bash(pkill -f \"metro\")",
+      "Bash(npx expo *)",
+      "Bash(npm install *)",
+      "Bash(npx kill-port *)"
+    ]
+  }
+}

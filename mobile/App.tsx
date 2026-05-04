@@ -19,7 +19,7 @@ WebBrowser.maybeCompleteAuthSession();
 // Firebase Console → 認証 → Google → ウェブSDK設定 → ウェブクライアントID
 // https://console.firebase.google.com/project/spot-recommender-50536/authentication/providers
 // ↓ ここに貼り付け
-const GOOGLE_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '677494767981-qvuvf90jjl17129rq304g3itq6nfoeli.apps.googleusercontent.com';
 // ─────────────────────────────────────────────────────────────────
 
 export default function App() {

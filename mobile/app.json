@@ -27,6 +27,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.spotrecommender.app",
+      "versionCode": 1,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyD3285pP-B8ye_z_-oZf3PYwID1fq34-PQ"
@@ -35,12 +36,16 @@
       "intentFilters": [
         {
           "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "spotrecommender"
-            }
-          ],
+          "data": {
+            "scheme": "exp"
+          },
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "data": {
+            "scheme": "spotrecommender"
+          },
           "category": ["BROWSABLE", "DEFAULT"]
         }
       ]

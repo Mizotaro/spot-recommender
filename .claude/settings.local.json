@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\user\\\\spot-recommender\\\\mobile\" -Recurse | Where-Object { !$_.FullName.Contains\\(\"node_modules\"\\) } | Select-Object FullName)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:8081\" -TimeoutSec 5 -UseBasicParsing; \"Status: $\\($r.StatusCode\\)\" } catch { \"Error: $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:8081/index.bundle?platform=android&dev=true&hot=false\" -TimeoutSec 30 -UseBasicParsing; \"OK size=$\\($r.Content.Length\\)\" } catch { \"Error: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(npm install *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:8081\" -TimeoutSec 5 -UseBasicParsing; \"Metro running: $\\($r.StatusCode\\)\" } catch { \"Metro not running: $_\" })",
+      "PowerShell(npx --yes localtunnel --port 8081 2>&1)",
+      "PowerShell(Out-Null *)",
+      "Bash(curl -s http://localhost:8081)",
+      "PowerShell(cd \"C:\\\\Users\\\\user\\\\spot-recommender\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"MoodSelector|OneClickProposal|pages.index|search-places|SwipeCard|DiscoveryScreen\" })"
+    ]
+  }
+}

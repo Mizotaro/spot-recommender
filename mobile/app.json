@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "スポット推薦",
+    "slug": "spot-recommender",
+    "scheme": "spotrecommender",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.spotrecommender.app",
+      "config": {
+        "googleMapsApiKey": "AIzaSyD3285pP-B8ye_z_-oZf3PYwID1fq34-PQ"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.spotrecommender.app",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyD3285pP-B8ye_z_-oZf3PYwID1fq34-PQ"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "現在地を使ってスポットを探します。"
+        }
+      ]
+    ],
+    "extra": {
+      "googleMapsApiKey": "AIzaSyD3285pP-B8ye_z_-oZf3PYwID1fq34-PQ"
+    }
+  }
+}

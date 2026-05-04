@@ -1,26 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert, ScrollView,
-} from 'react-native';
+import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import {
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  signInWithCredential,
+  GoogleAuthProvider,
   User,
 } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import HomeScreen from './screens/HomeScreen';
+import LoginScreen from './screens/LoginScreen';
+
+WebBrowser.maybeCompleteAuthSession();
+
+// Firebase Console → Authentication → Google → Web SDK configuration → Web client ID
+// https://console.firebase.google.com/project/spot-recommender-50536/authentication/providers
+const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
 
 export default function App() {
-  const [user, setUser]             = useState<User | null>(null);
+  const [user, setUser]           = useState<User | null>(null);
   const [appLoading, setAppLoading] = useState(true);
-  const [email, setEmail]           = useState('');
-  const [password, setPassword]     = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
-  const [isSignUp, setIsSignUp]     = useState(false);
 
+  // Google Sign-In hook（expo-auth-session v7）
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+  });
+
+  // Google 認証レスポンスを Firebase に渡す
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential).catch(() => {
+        // Alert は LoginScreen 側で処理済みのため不要
+      });
+    }
+  }, [response]);
+
+  // Firebase 認証状態の監視
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -28,33 +47,6 @@ export default function App() {
     });
     return () => unsub();
   }, []);
-
-  const handleAuth = async () => {
-    if (!email.trim() || !password) {
-      Alert.alert('入力エラー', 'メールアドレスとパスワードを入力してください');
-      return;
-    }
-    setAuthLoading(true);
-    try {
-      if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
-      } else {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
-      }
-    } catch (e: any) {
-      const msg: Record<string, string> = {
-        'auth/user-not-found':        'ユーザーが見つかりません',
-        'auth/wrong-password':        'パスワードが間違っています',
-        'auth/invalid-credential':    'メールまたはパスワードが正しくありません',
-        'auth/email-already-in-use':  'このメールは既に使用されています',
-        'auth/weak-password':         'パスワードは6文字以上にしてください',
-        'auth/invalid-email':         'メールアドレスの形式が正しくありません',
-      };
-      Alert.alert('エラー', msg[e.code] ?? 'ログインに失敗しました');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
 
   // ── スプラッシュ ───────────────────────
   if (appLoading) {
@@ -79,90 +71,20 @@ export default function App() {
 
   // ── ログイン画面 ──────────────────────
   return (
-    <KeyboardAvoidingView
-      style={s.authRoot}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={s.authScroll} keyboardShouldPersistTaps="handled">
-        <Text style={s.appIcon}>🗺️</Text>
-        <Text style={s.appName}>スポット推薦</Text>
-        <Text style={s.appDesc}>あなたの好みを学習して{'\n'}新しいスポットを発見しよう</Text>
-
-        {/* メール/パスワード入力 */}
-        <View style={s.form}>
-          <Text style={s.formLabel}>メールアドレス</Text>
-          <TextInput
-            style={s.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="your@email.com"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoCorrect={false}
-          />
-
-          <Text style={s.formLabel}>パスワード</Text>
-          <TextInput
-            style={s.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="6文字以上"
-            secureTextEntry
-          />
-
-          <TouchableOpacity
-            style={[s.authBtn, authLoading && s.authBtnDisabled]}
-            onPress={handleAuth}
-            disabled={authLoading}
-          >
-            {authLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={s.authBtnTxt}>{isSignUp ? '🔐 新規登録' : '🔐 ログイン'}</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} style={s.switchBtn}>
-            <Text style={s.switchTxt}>
-              {isSignUp ? '→ すでにアカウントをお持ちの方' : '→ 新規登録はこちら'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={s.note}>
-          ※ Firebase Console の Authentication で{'\n'}Email/Password を有効にしてください
-        </Text>
-      </ScrollView>
+    <>
+      <LoginScreen
+        onGoogleLogin={() => promptAsync()}
+        googleDisabled={!request}
+      />
       <StatusBar style="dark" />
-    </KeyboardAvoidingView>
+    </>
   );
 }
 
 const s = StyleSheet.create({
-  center: { flex: 1, backgroundColor: '#eff6ff', alignItems: 'center', justifyContent: 'center' },
+  center: {
+    flex: 1, backgroundColor: '#eff6ff',
+    alignItems: 'center', justifyContent: 'center',
+  },
   splashIcon: { fontSize: 64 },
-
-  authRoot: { flex: 1, backgroundColor: '#eff6ff' },
-  authScroll: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  appIcon: { fontSize: 64, marginBottom: 8 },
-  appName: { fontSize: 28, fontWeight: '800', marginBottom: 8, color: '#1e3a5f' },
-  appDesc: { fontSize: 14, color: '#6b7280', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
-
-  form: { width: '100%', maxWidth: 360 },
-  formLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 4 },
-  input: {
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#d1d5db',
-    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 11,
-    fontSize: 14, marginBottom: 14,
-  },
-  authBtn: {
-    backgroundColor: '#3b82f6', borderRadius: 12,
-    paddingVertical: 13, alignItems: 'center', marginTop: 4,
-  },
-  authBtnDisabled: { opacity: 0.6 },
-  authBtnTxt: { fontSize: 15, fontWeight: '700', color: '#fff' },
-  switchBtn: { alignItems: 'center', marginTop: 14 },
-  switchTxt: { fontSize: 13, color: '#3b82f6' },
-
-  note: { fontSize: 11, color: '#9ca3af', textAlign: 'center', marginTop: 32, lineHeight: 18 },
 });

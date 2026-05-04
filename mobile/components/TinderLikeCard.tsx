@@ -56,27 +56,40 @@ export default function TinderLikeCard({
       }
     },
     onPanResponderRelease: (_, gesture) => {
-      const isSwipeRight = gesture.dx >  SWIPE_THRESHOLD || gesture.vx >  0.7;
-      const isSwipeLeft  = gesture.dx < -SWIPE_THRESHOLD || gesture.vx < -0.7;
+      const SWIPE_DISTANCE = SCREEN_WIDTH * 0.3;
+      const SWIPE_VELOCITY = 0.5;
+
+      const isSwipeRight = gesture.dx >  SWIPE_DISTANCE || gesture.vx >  SWIPE_VELOCITY;
+      const isSwipeLeft  = gesture.dx < -SWIPE_DISTANCE || gesture.vx < -SWIPE_VELOCITY;
 
       if (isSwipeRight) {
         setIsAnimating(true);
         Animated.parallel([
-          Animated.timing(position.x, { toValue: SCREEN_WIDTH * 1.5, duration: 400, useNativeDriver: false }),
-          Animated.timing(rotation,   { toValue: 30, duration: 400, useNativeDriver: false }),
-          Animated.timing(likeOpacity,{ toValue: 1,  duration: 200, useNativeDriver: false }),
-        ]).start(() => { onLike(); resetCard(); });
+          Animated.timing(position.x, { toValue: SCREEN_WIDTH * 2,   duration: 400, useNativeDriver: false }),
+          Animated.timing(rotation,   { toValue: 30,                  duration: 400, useNativeDriver: false }),
+          Animated.timing(likeOpacity,{ toValue: 1,                   duration: 200, useNativeDriver: false }),
+        ]).start(() => {
+          console.log('Right swipe - calling onLike');
+          onLike();
+          resetCard();
+        });
 
       } else if (isSwipeLeft) {
         setIsAnimating(true);
         Animated.parallel([
-          Animated.timing(position.x, { toValue: -SCREEN_WIDTH * 1.5, duration: 400, useNativeDriver: false }),
-          Animated.timing(rotation,   { toValue: -30, duration: 400, useNativeDriver: false }),
-          Animated.timing(nopeOpacity,{ toValue: 1,   duration: 200, useNativeDriver: false }),
-        ]).start(() => { onDislike(); resetCard(); });
+          Animated.timing(position.x, { toValue: -SCREEN_WIDTH * 2,  duration: 400, useNativeDriver: false }),
+          Animated.timing(rotation,   { toValue: -30,                 duration: 400, useNativeDriver: false }),
+          Animated.timing(nopeOpacity,{ toValue: 1,                   duration: 200, useNativeDriver: false }),
+        ]).start(() => {
+          console.log('Left swipe - calling onDislike');
+          onDislike();
+          resetCard();
+        });
 
       } else {
-        Animated.spring(position, { toValue: { x: 0, y: 0 }, tension: 40, friction: 8, useNativeDriver: false }).start();
+        Animated.spring(position, { toValue: { x: 0, y: 0 }, tension: 40, friction: 8, useNativeDriver: false }).start(() => {
+          setIsAnimating(false);
+        });
         Animated.spring(rotation, { toValue: 0, tension: 40, friction: 8, useNativeDriver: false }).start();
         likeOpacity.setValue(0);
         nopeOpacity.setValue(0);

@@ -2,10 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { category, lat, lng } = req.query;
+  const { category, lat, lng, radius } = req.query;
 
   console.log('🔑 API キー:', process.env.GOOGLE_MAPS_API_KEY ? '設定済み' : '未設定');
-  console.log('📍 リクエストパラメータ:', { category, lat, lng });
+  console.log('📍 リクエストパラメータ:', { category, lat, lng, radius });
 
   if (!lat || !lng) {
     return res.status(400).json({ error: '位置情報が必要です' });
@@ -15,8 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {
       params: {
         location: `${lat},${lng}`,
-        radius: 3000,
+        radius: Number(radius) || 3000,
         type: category || 'restaurant',
+        language: 'ja',
         key: process.env.GOOGLE_MAPS_API_KEY,
       },
     });

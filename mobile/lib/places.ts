@@ -30,7 +30,7 @@ export interface PlaceDetails extends PlaceResult {
 }
 
 export async function searchNearby(lat: number, lng: number, type: string, radius = 3000): Promise<PlaceResult[]> {
-  const url = `${BASE}/nearbysearch/json?location=${lat},${lng}&radius=${radius}&type=${type}&key=${API_KEY}`;
+  const url = `${BASE}/nearbysearch/json?location=${lat},${lng}&radius=${radius}&type=${type}&language=ja&key=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
   return (data.results as PlaceResult[]) ?? [];

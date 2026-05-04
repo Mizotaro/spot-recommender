@@ -15,17 +15,23 @@ import LoginScreen from './screens/LoginScreen';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Firebase Console → Authentication → Google → Web SDK configuration → Web client ID
+// ─────────────────────────────────────────────────────────────────
+// Firebase Console → 認証 → Google → ウェブSDK設定 → ウェブクライアントID
 // https://console.firebase.google.com/project/spot-recommender-50536/authentication/providers
-const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+// ↓ ここに貼り付け
+const GOOGLE_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+// ─────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [user, setUser]           = useState<User | null>(null);
   const [appLoading, setAppLoading] = useState(true);
 
   // Google Sign-In hook（expo-auth-session v7）
+  // Expo Go: webClientId のみで動作
+  // スタンドアロンビルド: androidClientId / iosClientId も別途設定
   const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
+    webClientId:     GOOGLE_CLIENT_ID,
+    androidClientId: GOOGLE_CLIENT_ID,
   });
 
   // Google 認証レスポンスを Firebase に渡す

@@ -1,34 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import {
   onAuthStateChanged,
+  signInWithCredential,
   GoogleAuthProvider,
-  signInWithPopup,
   User,
 } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 
+WebBrowser.maybeCompleteAuthSession();
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [appLoading, setAppLoading] = useState(true);
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.addScope('profile');
-      provider.addScope('email');
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: '677494767981-qvuvf90jjl17129rq304g3itq6nfoeli.apps.googleusercontent.com',
+    webClientId: '677494767981-qvuvf90jjl17129rq304g3itq6nfoeli.apps.googleusercontent.com',
+    useProxy: true,
+  } as any);
 
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-      console.log('ログイン成功:', result.user.email);
-    } catch (error) {
-      console.error('ログインエラー:', error);
-      alert('ログインに失敗しました');
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential)
+        .then((userCredential) => {
+          setUser(userCredential.user);
+          console.log('ログイン成功:', userCredential.user.email);
+        })
+        .catch((error) => {
+          console.error('Firebase ログインエラー:', error);
+        });
     }
-  };
+  }, [response]);
 
   // Firebase 認証状態の監視
   useEffect(() => {
@@ -38,6 +48,10 @@ export default function App() {
     });
     return () => unsub();
   }, []);
+
+  const handleGoogleSignIn = async () => {
+    await promptAsync();
+  };
 
   // ── スプラッシュ ───────────────────────
   if (appLoading) {

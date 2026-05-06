@@ -97,9 +97,7 @@ export default function Home() {
         location: doc.data().location,
       }));
       setUserLikes(likes);
-      if (likes.length > 0) {
-        generateRecommendations(userLocation, likes, selectedCategory);
-      }
+      generateRecommendations(userLocation, likes, selectedCategory);
     } catch (error) {
       console.error('いいね取得エラー:', error);
     }

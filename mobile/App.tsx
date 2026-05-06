@@ -1,54 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
 import {
   onAuthStateChanged,
-  signInWithCredential,
   GoogleAuthProvider,
+  signInWithPopup,
   User,
 } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 
-WebBrowser.maybeCompleteAuthSession();
-
-// ─────────────────────────────────────────────────────────────────
-// Firebase Console → 認証 → Google → ウェブSDK設定 → ウェブクライアントID
-// https://console.firebase.google.com/project/spot-recommender-50536/authentication/providers
-// ↓ ここに貼り付け
-const GOOGLE_CLIENT_ID = '677494767981-qvuvf90jjl17129rq304g3itq6nfoeli.apps.googleusercontent.com';
-// ─────────────────────────────────────────────────────────────────
-
 export default function App() {
-  const [user, setUser]           = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [appLoading, setAppLoading] = useState(true);
 
-  // Google Sign-In hook（expo-auth-session v7）
-  // Expo Go: webClientId のみで動作
-  // スタンドアロンビルド: androidClientId / iosClientId も別途設定
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId:     GOOGLE_CLIENT_ID,
-    androidClientId: GOOGLE_CLIENT_ID,
-  });
+  const handleGoogleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('email');
 
-  // Google 認証レスポンスを Firebase に渡す
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential)
-        .then((userCredential) => {
-          setUser(userCredential.user);
-          console.log('ログイン成功:', userCredential.user.email);
-        })
-        .catch((error) => {
-          console.error('Firebase ログインエラー:', error);
-        });
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+      console.log('ログイン成功:', result.user.email);
+    } catch (error) {
+      console.error('ログインエラー:', error);
+      alert('ログインに失敗しました');
     }
-  }, [response]);
+  };
 
   // Firebase 認証状態の監視
   useEffect(() => {
@@ -84,8 +64,8 @@ export default function App() {
   return (
     <>
       <LoginScreen
-        onGoogleLogin={() => promptAsync()}
-        googleDisabled={!request}
+        onGoogleLogin={handleGoogleSignIn}
+        onGuestLogin={() => setUser({ uid: 'guest', email: 'guest@demo.com', displayName: 'ゲスト' } as any)}
       />
       <StatusBar style="dark" />
     </>

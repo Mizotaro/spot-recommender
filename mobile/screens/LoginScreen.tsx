@@ -12,10 +12,11 @@ import { auth } from '../lib/firebase';
 
 interface LoginScreenProps {
   onGoogleLogin: () => void;
+  onGuestLogin: () => void;
   googleDisabled?: boolean;
 }
 
-export default function LoginScreen({ onGoogleLogin, googleDisabled }: LoginScreenProps) {
+export default function LoginScreen({ onGoogleLogin, onGuestLogin, googleDisabled }: LoginScreenProps) {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -125,6 +126,10 @@ export default function LoginScreen({ onGoogleLogin, googleDisabled }: LoginScre
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity style={s.guestButton} onPress={onGuestLogin}>
+          <Text style={s.guestButtonText}>ゲストとして続ける</Text>
+        </TouchableOpacity>
+
         <Text style={s.note}>
           ※ Firebase Console の Authentication で{'\n'}Email/Password と Google を有効にしてください
         </Text>
@@ -186,4 +191,15 @@ const s = StyleSheet.create({
   switchText:   { fontSize: 13, color: '#3b82f6' },
 
   note: { fontSize: 11, color: '#9ca3af', textAlign: 'center', marginTop: 24, lineHeight: 18 },
+
+  guestButton: {
+    marginTop: 16,
+    padding: 16,
+    alignItems: 'center',
+  },
+  guestButtonText: {
+    fontSize: 14,
+    color: '#999',
+    textDecorationLine: 'underline',
+  },
 });

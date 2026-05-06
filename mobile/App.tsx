@@ -39,9 +39,14 @@ export default function App() {
     if (response?.type === 'success') {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential).catch(() => {
-        // Alert は LoginScreen 側で処理済みのため不要
-      });
+      signInWithCredential(auth, credential)
+        .then((userCredential) => {
+          setUser(userCredential.user);
+          console.log('ログイン成功:', userCredential.user.email);
+        })
+        .catch((error) => {
+          console.error('Firebase ログインエラー:', error);
+        });
     }
   }, [response]);
 

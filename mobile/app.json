@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "スポット推薦",
+    "name": "PickSpot",
     "slug": "spot-recommender",
     "scheme": "spotrecommender",
     "version": "1.0.0",
@@ -39,15 +39,25 @@
           "data": {
             "scheme": "exp"
           },
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
           "data": {
             "scheme": "spotrecommender"
           },
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
+      ],
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -63,7 +73,10 @@
       ]
     ],
     "extra": {
-      "googleMapsApiKey": "AIzaSyD3285pP-B8ye_z_-oZf3PYwID1fq34-PQ"
+      "googleMapsApiKey": "AIzaSyD3285pP-B8ye_z_-oZf3PYwID1fq34-PQ",
+      "eas": {
+        "projectId": "7b62bce2-d1af-4c6d-8a13-7e3928c1b752"
+      }
     }
   }
 }

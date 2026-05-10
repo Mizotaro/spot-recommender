@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { onAuthStateChanged, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import {
   collection,
@@ -71,16 +71,19 @@ export default function Home() {
   const selectPlaceCallbackRef = useRef<((place: Place) => void) | null>(null);
   const closeInfoWindowRef = useRef<(() => void) | null>(null);
 
-  // ログイン
+  // ログイン（iframe対応：ポップアップで新しいウィンドウを開く）
   const handleLogin = async () => {
     setLoginError(null);
     setLoginLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+      fetchUserLikes(result.user.uid);
     } catch (error: any) {
       console.error('ログインエラー:', error);
       setLoginError(`ログインエラー: ${error.code ?? ''} ${error.message ?? String(error)}`);
+    } finally {
       setLoginLoading(false);
     }
   };
@@ -241,18 +244,6 @@ export default function Home() {
       (err) => console.warn('位置情報取得失敗:', err),
     );
   }, []);
-
-  // リダイレクト後のログイン結果を取得
-  useEffect(() => {
-    getRedirectResult(auth).then((result) => {
-      if (result?.user) {
-        setUser(result.user);
-        fetchUserLikes(result.user.uid);
-      }
-    }).catch((error) => {
-      console.error('リダイレクトログインエラー:', error);
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ログイン状態チェック
   useEffect(() => {

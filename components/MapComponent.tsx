@@ -42,6 +42,8 @@ interface MapComponentProps {
   closeInfoWindowRef?: React.MutableRefObject<(() => void) | null>;
 }
 
+const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "AIzaSyDrktr_jQnSRjEwI0gVNXJ9VHRdGWFgJXY";
+
 const mapContainerStyle = { width: '100%', height: '600px', minHeight: '400px' };
 
 const PRICE_DISPLAY: Record<number, string> = {
@@ -60,7 +62,7 @@ function getPhotoUrl(place: Place): string | null {
   if (!photo) return null;
   if (typeof photo.getUrl === 'function') return photo.getUrl({ maxWidth: 400 });
   if (photo.photo_reference) {
-    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photo.photo_reference}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
+    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photo.photo_reference}&key=${MAPS_API_KEY}`;
   }
   return null;
 }
@@ -129,7 +131,7 @@ export default function MapComponent({
 
   return (
     <LoadScript
-      googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+      googleMapsApiKey={MAPS_API_KEY}
       onError={() => alert('Google Maps APIの読み込みに失敗しました')}
     >
       <GoogleMap

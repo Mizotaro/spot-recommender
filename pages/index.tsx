@@ -65,14 +65,24 @@ export default function Home() {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [oneClickProposal, setOneClickProposal] = useState<any>(null);
   const [proposalReason, setProposalReason] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const selectPlaceCallbackRef = useRef<((place: Place) => void) | null>(null);
   const closeInfoWindowRef = useRef<(() => void) | null>(null);
 
   // ログイン
   const handleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    setLoginError(null);
+    setLoginLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithRedirect(auth, provider);
+    } catch (error: any) {
+      console.error('ログインエラー:', error);
+      setLoginError(`ログインエラー: ${error.code ?? ''} ${error.message ?? String(error)}`);
+      setLoginLoading(false);
+    }
   };
 
   // いいね履歴取得
@@ -274,10 +284,14 @@ export default function Home() {
           </p>
           <button
             onClick={handleLogin}
-            className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold shadow-lg transition"
+            disabled={loginLoading}
+            className="px-8 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg font-semibold shadow-lg transition"
           >
-            🔐 Googleでログイン
+            {loginLoading ? '処理中...' : '🔐 Googleでログイン'}
           </button>
+          {loginError && (
+            <p className="mt-4 text-red-600 text-sm max-w-xs break-all">{loginError}</p>
+          )}
         </div>
       </div>
     );

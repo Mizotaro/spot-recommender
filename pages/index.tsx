@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { onAuthStateChanged, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import {
   collection,
@@ -71,15 +71,8 @@ export default function Home() {
 
   // ログイン
   const handleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-      fetchUserLikes(result.user.uid);
-    } catch (error) {
-      console.error('ログインエラー:', error);
-      alert('ログインに失敗しました');
-    }
+    const provider = new GoogleAuthProvider();
+    await signInWithRedirect(auth, provider);
   };
 
   // いいね履歴取得
@@ -238,6 +231,18 @@ export default function Home() {
       (err) => console.warn('位置情報取得失敗:', err),
     );
   }, []);
+
+  // リダイレクト後のログイン結果を取得
+  useEffect(() => {
+    getRedirectResult(auth).then((result) => {
+      if (result?.user) {
+        setUser(result.user);
+        fetchUserLikes(result.user.uid);
+      }
+    }).catch((error) => {
+      console.error('リダイレクトログインエラー:', error);
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ログイン状態チェック
   useEffect(() => {
